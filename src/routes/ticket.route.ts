@@ -3,6 +3,10 @@ import { StatusCodes } from "http-status-codes";
 import { validateRequestMiddleware, requireAuthMiddleware } from "@jiaul.islam/common.ticketing.dev";
 import { body } from "express-validator";
 
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
 const router = express.Router();
 
 router.get("/health", (req: Request, res: Response) => {
@@ -10,30 +14,51 @@ router.get("/health", (req: Request, res: Response) => {
 });
 
 
-router.get("/", (req: Request, res: Response) => {
-    res.json({ message: "ticket list view working" });
+router.get("/", async (req: Request, res: Response) => {
+    const tickets = await prisma.ticket.findMany();
+    res.json(tickets);
 });
 
 
 router.post("/", requireAuthMiddleware, [
     body("title").notEmpty().withMessage("Title is required"),
     body("price").isFloat({ gt: 0 }).withMessage("Price must be a positive number"),
-], validateRequestMiddleware, (req: Request, res: Response) => {
-    res.status(StatusCodes.CREATED).json({ message: "ticket created" });
+], validateRequestMiddleware, async (req: Request, res: Response) => {
+    const { title, price } = req.body;
+    console.log(req.currentUser)
+    const ticket = await prisma.ticket.create({
+        data: {
+            title,
+            price,
+            userId: req.currentUser!.id,
+        },
+    });
+
+    res.status(StatusCodes.CREATED).json({ message: "ticket created", ticket });
 });
 
 
-router.get("/:id", (req: Request, res: Response) => {
+router.get("/:id", async (req: Request, res: Response) => {
     const { id } = req.params;
-    res.json({ message: `ticket detail view working for ticket ${id}` });
+    const ticket = await prisma.ticket.findUnique({
+        where: { id: Number(id) },
+    });
+    res.json(ticket);
 });
 
 router.put("/:id", requireAuthMiddleware, [
     body("title").notEmpty().withMessage("Title is required"),
     body("price").isFloat({ gt: 0 }).withMessage("Price must be a positive number"),
-], validateRequestMiddleware, (req: Request, res: Response) => {
+], validateRequestMiddleware, async (req: Request, res: Response) => {
     const { id } = req.params;
-    res.json({ message: `ticket update view working for ticket ${id}` });
+    const { title, price } = req.body;
+
+    const ticket = await prisma.ticket.update({
+        where: { id: Number(id) },
+        data: { title, price },
+    });
+
+    res.json({ message: "ticket updated", ticket });
 });
 
 
