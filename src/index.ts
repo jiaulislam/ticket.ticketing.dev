@@ -1,9 +1,8 @@
 import dotenv from "dotenv";
 
-
 dotenv.config()
 
-import { app } from "./app";
+import { app, kafkaService } from "./app";
 
 
 const checkKafkaEnvVariables = () => {
@@ -44,5 +43,17 @@ const start = async () => {
 
 start(); // eslint-disable-line
 
+// Graceful shutdown
+const gracefulShutdown = async () => {
+    try {
+        await kafkaService.disconnect();
+        console.log(`Kafka service disconnected`);
+    } catch (error) {
+        console.error(`Error disconnecting Kafka service: ${error}`);
+    } finally {
+        process.exit(0);
+    }
+}
 
-
+process.on("SIGINT", gracefulShutdown);
+process.on("SIGTERM", gracefulShutdown);

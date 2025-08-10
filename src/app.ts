@@ -2,7 +2,7 @@ import express from 'express';
 import { json } from 'body-parser';
 import cookieSession from "cookie-session";
 import { currentUserMiddleware, errorHandlerMiddleware } from "@jiaul.islam/common.ticketing.dev";
-
+import { TicketKafkaService } from "./kafka"
 // routes
 import { ticketRouter } from './routes';
 
@@ -17,4 +17,8 @@ app.use("/api/v1/tickets", ticketRouter);
 
 app.use(errorHandlerMiddleware);
 
-export { app };
+// kafka singleton instance
+
+const kafkaService = new TicketKafkaService();
+
+export { app, kafkaService };

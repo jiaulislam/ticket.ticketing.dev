@@ -1,10 +1,11 @@
-import { BaseProducer, Subject } from "@jiaul.islam/common.ticketing.dev";
+import { BaseEventPublisher, Subject } from "@jiaul.islam/common.ticketing.dev";
 import { Ticket } from "@prisma/client";
 
-export class TicketCreatedProducer extends BaseProducer<Ticket> {
+import { kafkaService } from "../app";
+export class TicketCreatedProducer extends BaseEventPublisher<Ticket> {
     readonly topic: Subject.TICKET_CREATED = Subject.TICKET_CREATED;
 
     constructor() {
-        super();
+        super(kafkaService.getProducer());
     }
 }

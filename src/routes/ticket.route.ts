@@ -36,13 +36,7 @@ router.post("/", requireAuthMiddleware, [
     });
 
     const producer = new TicketCreatedProducer();
-    await producer.connect();
-    const eventData = {
-        subject: Subject.TICKET_CREATED,
-        data: ticket,
-    }
-    await producer.produce(eventData);
-    await producer.disconnect();
+    await producer.publish(ticket);
 
     res.status(StatusCodes.CREATED).json({ message: "ticket created", ticket });
 });
