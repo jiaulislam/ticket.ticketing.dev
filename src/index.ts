@@ -35,7 +35,7 @@ const start = async () => {
     }
 
     checkKafkaEnvVariables();
-
+    await kafkaService.connect();
     app.listen(process.env.SERVER_PORT || 4001, () => {
         console.log(`Ticket Server is running on port ${process.env.SERVER_PORT || 4001}`);
     });
