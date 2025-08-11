@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
-import { validateRequestMiddleware, requireAuthMiddleware, Subject } from "@jiaul.islam/common.ticketing.dev";
+import { validateRequestMiddleware, requireAuthMiddleware } from "@jiaul.islam/common.ticketing.dev";
 import { body } from "express-validator";
 
 import { PrismaClient } from "@prisma/client";
@@ -15,8 +15,11 @@ router.get("/health", (req: Request, res: Response) => {
 });
 
 
-router.get("/", async (req: Request, res: Response) => {
-    const tickets = await prisma.ticket.findMany();
+router.get("/", requireAuthMiddleware, async (req: Request, res: Response) => {
+    const currentUser = req.currentUser;
+    const tickets = await prisma.ticket.findMany({
+        where: { userId: currentUser!.id },
+    });
     res.json(tickets);
 });
 
