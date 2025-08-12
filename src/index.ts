@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 
 dotenv.config()
 
-import { app, kafkaService } from "./app";
+import { app, ticketKafkaProducer } from "./app";
 
 
 const checkKafkaEnvVariables = () => {
@@ -35,7 +35,7 @@ const start = async () => {
     }
 
     checkKafkaEnvVariables();
-    await kafkaService.connect();
+    await ticketKafkaProducer.connect();
     app.listen(process.env.SERVER_PORT || 4001, () => {
         console.log(`Ticket Server is running on port ${process.env.SERVER_PORT || 4001}`);
     });
@@ -46,10 +46,10 @@ start(); // eslint-disable-line
 // Graceful shutdown
 const gracefulShutdown = async () => {
     try {
-        await kafkaService.disconnect();
-        console.log(`Kafka service disconnected`);
+        await ticketKafkaProducer.disconnect();
+        console.log(`Kafka producer disconnected`);
     } catch (error) {
-        console.error(`Error disconnecting Kafka service: ${error}`);
+        console.error(`Error disconnecting Kafka producer: ${error}`);
     } finally {
         process.exit(0);
     }
