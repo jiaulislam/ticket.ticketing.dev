@@ -4,7 +4,7 @@ import { validateRequestMiddleware, requireAuthMiddleware } from "@jiaul.islam/c
 import { body } from "express-validator";
 
 import { PrismaClient } from "@prisma/client";
-import { TicketCreatedProducer } from "../service";
+import { TicketCreatedProducer, TicketUpdatedProducer } from "../service";
 
 const prisma = new PrismaClient();
 
@@ -65,6 +65,8 @@ router.put("/:id", requireAuthMiddleware, [
         data: { title, price },
     });
 
+    const producer = new TicketUpdatedProducer();
+    await producer.publish(ticket);
     res.json({ message: "ticket updated", ticket });
 });
 
