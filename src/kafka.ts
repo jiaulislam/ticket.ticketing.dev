@@ -1,14 +1,10 @@
 import { AbstractKafkaProducer } from "@jiaul.islam/common.ticketing.dev";
-import { ProducerConstructorConfig } from "@confluentinc/kafka-javascript/types/kafkajs";
+import { KafkaConfig } from "kafkajs";
 
-const kafkaConfig: ProducerConstructorConfig = {
-    "bootstrap.servers": process.env.KAFKA_BOOTSTRAP_SERVERS!,
-    "security.protocol": "sasl_ssl",
-    "sasl.mechanism": process.env.KAFKA_SASL_MECHANISM!,
-    "sasl.username": process.env.KAFKA_SASL_USERNAME!,
-    "sasl.password": process.env.KAFKA_SASL_PASSWORD!,
-    "socket.timeout.ms": 45000,
-    "client.id": process.env.KAFKA_CLIENT_ID!,
+
+const kafkaConfig: KafkaConfig = {
+    clientId: process.env.KAFKA_CLIENT_ID || 'ticket-service',
+    brokers: [process.env.KAFKA_BOOTSTRAP_SERVERS || 'localhost:9092'],
 }
 
 export class TicketKafkaProducer extends AbstractKafkaProducer {

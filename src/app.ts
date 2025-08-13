@@ -2,7 +2,9 @@ import express from 'express';
 import { json } from 'body-parser';
 import cookieSession from "cookie-session";
 import { currentUserMiddleware, errorHandlerMiddleware } from "@jiaul.islam/common.ticketing.dev";
-import { TicketKafkaProducer } from "./kafka"
+import { TicketKafkaProducer } from './kafka';
+
+
 // routes
 import { ticketRouter } from './routes';
 

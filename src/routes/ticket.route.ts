@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 
 const router = express.Router();
 
-router.get("/health", (req: Request, res: Response) => {
+router.get("/health", (_, res: Response) => {
     res.json({ status: "OK" });
 });
 
@@ -38,10 +38,10 @@ router.post("/", requireAuthMiddleware, [
         },
     });
 
-    const producer = new TicketCreatedProducer();
-    await producer.publish(ticket);
+    const ticketCreatedProducer = new TicketCreatedProducer();
+    await ticketCreatedProducer.publish(ticket);
 
-    res.status(StatusCodes.CREATED).json({ message: "ticket created", ticket });
+    res.status(StatusCodes.CREATED).json({ message: "ticket created successfully", data: ticket });
 });
 
 
@@ -65,9 +65,11 @@ router.put("/:id", requireAuthMiddleware, [
         data: { title, price },
     });
 
-    const producer = new TicketUpdatedProducer();
-    await producer.publish(ticket);
-    res.json({ message: "ticket updated", ticket });
+
+    const ticketUpdatedProducer = new TicketUpdatedProducer();
+    await ticketUpdatedProducer.publish(ticket);
+
+    res.json({ message: "ticket updated successfully", data: ticket });
 });
 
 
