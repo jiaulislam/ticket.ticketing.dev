@@ -3,10 +3,10 @@ import { StatusCodes } from "http-status-codes";
 import { validateRequestMiddleware, requireAuthMiddleware } from "@jiaul.islam/common.ticketing.dev";
 import { body } from "express-validator";
 
-import { PrismaClient } from "@prisma/client";
-import { TicketCreatedProducer, TicketUpdatedProducer } from "../service";
+import { TicketCreatedEventProducer, TicketUpdatedEventProducer } from "../events/ticket.event";
+import { TicketService } from "../service";
 
-const prisma = new PrismaClient();
+const ticketService = new TicketService();
 
 const router = express.Router();
 
@@ -16,9 +16,9 @@ router.get("/health", (_, res: Response) => {
 
 
 router.get("/", requireAuthMiddleware, async (req: Request, res: Response) => {
-    const currentUser = req.currentUser;
-    const tickets = await prisma.ticket.findMany({
-        where: { userId: currentUser!.id },
+    const currentUser = req.currentUser!;
+    const tickets = await ticketService.findAll({
+        where: { userId: currentUser.id },
     });
     res.json(tickets);
 });
@@ -30,15 +30,16 @@ router.post("/", requireAuthMiddleware, [
 ], validateRequestMiddleware, async (req: Request, res: Response) => {
     const { title, price } = req.body;
 
-    const ticket = await prisma.ticket.create({
+    const currentUser = req.currentUser!;
+    const ticket = await ticketService.create({
         data: {
             title,
             price,
-            userId: req.currentUser!.id,
+            userId: currentUser.id,
         },
     });
 
-    const ticketCreatedProducer = new TicketCreatedProducer();
+    const ticketCreatedProducer = new TicketCreatedEventProducer();
     await ticketCreatedProducer.publish(ticket);
 
     res.status(StatusCodes.CREATED).json({ message: "ticket created successfully", data: ticket });
@@ -47,7 +48,7 @@ router.post("/", requireAuthMiddleware, [
 
 router.get("/:id", async (req: Request, res: Response) => {
     const { id } = req.params;
-    const ticket = await prisma.ticket.findUnique({
+    const ticket = await ticketService.findUnique({
         where: { id: Number(id) },
     });
     res.json(ticket);
@@ -60,13 +61,13 @@ router.put("/:id", requireAuthMiddleware, [
     const { id } = req.params;
     const { title, price } = req.body;
 
-    const ticket = await prisma.ticket.update({
+    const ticket = await ticketService.update({
         where: { id: Number(id) },
         data: { title, price },
     });
 
 
-    const ticketUpdatedProducer = new TicketUpdatedProducer();
+    const ticketUpdatedProducer = new TicketUpdatedEventProducer();
     await ticketUpdatedProducer.publish(ticket);
 
     res.json({ message: "ticket updated successfully", data: ticket });
