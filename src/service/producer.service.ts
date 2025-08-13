@@ -1,8 +1,7 @@
-import { AbstractKafkaEventProducer, Subject } from "@jiaul.islam/common.ticketing.dev";
-import { Ticket } from "@prisma/client";
+import { AbstractKafkaEventProducer, Subject, TicketCreatedUpdatedEvent } from "@jiaul.islam/common.ticketing.dev";
 
 import { ticketKafkaProducer } from "../app";
-export class TicketCreatedProducer extends AbstractKafkaEventProducer<Ticket> {
+export class TicketCreatedProducer extends AbstractKafkaEventProducer<TicketCreatedUpdatedEvent> {
     readonly topic: Subject.TICKET_CREATED = Subject.TICKET_CREATED;
 
     constructor() {
@@ -10,7 +9,7 @@ export class TicketCreatedProducer extends AbstractKafkaEventProducer<Ticket> {
     }
 }
 
-export class TicketUpdatedProducer extends AbstractKafkaEventProducer<Ticket> {
+export class TicketUpdatedProducer extends AbstractKafkaEventProducer<TicketCreatedUpdatedEvent> {
     readonly topic: Subject.TICKET_UPDATED = Subject.TICKET_UPDATED;
 
     constructor() {
