@@ -28,7 +28,7 @@ export class TicketKafkaConsumer extends AbstractKafkaConsumer {
         const handler = topicHandlers[topic]
         if (!handler) {
             console.error(`No handler found for topic ${topic}`);
-            return;
+            throw new Error(`No handler found for topic ${topic}`);
         }
         await handler(message)
     }
