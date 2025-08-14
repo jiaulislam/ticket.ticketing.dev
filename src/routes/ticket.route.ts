@@ -61,28 +61,28 @@ router.put("/:id", requireAuthMiddleware, [
     const { id } = req.params;
     const { title, price } = req.body;
 
-    const previousTicket = await ticketService.findUnique({
+    const ticket = await ticketService.findUnique({
         where: { id: Number(id) },
     });
 
-    if (!previousTicket) {
+    if (!ticket) {
         throw new NotFoundError(`Ticket with ID ${id} not found`);
     }
 
-    if (previousTicket.orderId) {
+    if (ticket.orderId) {
         throw new ValidationError("Cannot update ticket with active order");
     }
 
-    const ticket = await ticketService.update({
+    const updatedTicket = await ticketService.update({
         where: { id: Number(id) },
         data: { title, price },
     });
 
 
     const ticketUpdatedProducer = new TicketUpdatedEventProducer();
-    await ticketUpdatedProducer.publish(ticket);
+    await ticketUpdatedProducer.publish(updatedTicket);
 
-    res.json({ message: "ticket updated successfully", data: ticket });
+    res.json({ message: "ticket updated successfully", data: updatedTicket });
 });
 
 

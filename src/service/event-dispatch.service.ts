@@ -1,4 +1,4 @@
-import { Subject, OrderCreatedUpdatedEvent, OrderStatusEnum } from "@jiaul.islam/common.ticketing.dev";
+import { Subject, OrderCreatedUpdatedEvent, OrderStatusEnum, NotFoundError } from "@jiaul.islam/common.ticketing.dev";
 import { TicketService } from "./ticket.service";
 import { TicketUpdatedEventProducer } from "../events/ticket.event";
 
@@ -35,19 +35,18 @@ const handleOrderCreated = async (createdOrder: OrderCreatedUpdatedEvent) => {
 
 const handleOrderUpdated = async (updatedOrder: OrderCreatedUpdatedEvent) => {
     const { status: orderStatus, ticketId } = updatedOrder;
-    const existingTicket = await ticketService.findUnique({
+    const ticket = await ticketService.findUnique({
         where: { id: ticketId }
     });
-    if (!existingTicket) {
-        console.error(`Ticket with ID ${ticketId} not found`);
-        return;
+    if (!ticket) {
+        throw new NotFoundError(`Ticket with ID ${ticketId} not found`);
     }
     if (orderStatus === OrderStatusEnum.CANCELLED) {
         const updatedTicket = await ticketService.update({
-            where: { id: existingTicket.id },
+            where: { id: ticket.id },
             data: {
                 orderId: null,
-                version: existingTicket.version + 1
+                version: ticket.version + 1
             }
         });
         const ticketUpdateEventProducer = new TicketUpdatedEventProducer()
