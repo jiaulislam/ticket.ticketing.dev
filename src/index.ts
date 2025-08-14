@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 
 dotenv.config()
 
-import { app, ticketKafkaProducer } from "./app";
+import { app, ticketKafkaProducer, ticketKafkaConsumer } from "./app";
 
 
 const start = async () => {
@@ -14,7 +14,12 @@ const start = async () => {
     }
 
     try {
+        //producer
         await ticketKafkaProducer.connect();
+        // consumer
+        await ticketKafkaConsumer.connect();
+        await ticketKafkaConsumer.subscribe();
+        await ticketKafkaConsumer.consume();
     } catch (error) {
         process.exit(1)
     }
