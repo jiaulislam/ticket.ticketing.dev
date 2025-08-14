@@ -18,6 +18,7 @@ model Ticket {
   title     String
   price     Float
   userId    Int
+  orderId   Int?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
