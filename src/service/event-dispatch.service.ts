@@ -8,8 +8,9 @@ const ticketService = new TicketService();
 
 /**
  * Handler for the ORDER_CREATED  event.
- * Creates a new ticket in the database using the provided data.
- * @param data - The ticket data containing id, title, and price.
+ * Update the ticket in the database using the provided data.
+ * orderId will be updaeted to keep track which tickets are in use
+ * @param data - The ticket data containing id, orderId.
  */
 const handleOrderCreated = async (data: OrderCreatedUpdatedEvent) => {
     const { id, ticketId } = data;
