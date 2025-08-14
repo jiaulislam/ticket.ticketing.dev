@@ -66,7 +66,7 @@ router.put("/:id", requireAuthMiddleware, [
     });
 
     if (!previousTicket) {
-        throw new NotFoundError();
+        throw new NotFoundError(`Ticket with ID ${id} not found`);
     }
 
     if (previousTicket.orderId) {
