@@ -21,7 +21,7 @@ export class TicketKafkaConsumer extends AbstractKafkaConsumer {
     readonly clusterName = "ticketing-cluster";
 
     constructor() {
-        super(kafkaConfig, [Subject.ORDER_CREATED]);
+        super(kafkaConfig, [Subject.ORDER_CREATED, Subject.ORDER_UPDATED]);
     }
 
     async onMessage(topic: Subject, message: any): Promise<void> {
