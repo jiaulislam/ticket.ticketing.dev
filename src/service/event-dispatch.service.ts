@@ -1,5 +1,6 @@
 import { Subject, OrderCreatedUpdatedEvent } from "@jiaul.islam/common.ticketing.dev";
 import { TicketService } from "./ticket.service";
+import { TicketUpdatedEventProducer } from "../events/ticket.event";
 
 
 const ticketService = new TicketService();
@@ -19,12 +20,16 @@ const handleOrderCreated = async (data: OrderCreatedUpdatedEvent) => {
         console.error(`Ticket with ID ${ticketId} not found`);
         return;
     }
-    await ticketService.update({
+    const updatedTicket = await ticketService.update({
         where: { id: existingTicket.id },
         data: {
-            orderId: id
+            orderId: id,
+            version: existingTicket.version + 1
         }
     });
+
+    const ticketUpdateEventProducer = new TicketUpdatedEventProducer()
+    await ticketUpdateEventProducer.publish(updatedTicket)
 }
 
 
