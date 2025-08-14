@@ -1,4 +1,4 @@
-import { Subject, OrderCreatedUpdatedEvent } from "@jiaul.islam/common.ticketing.dev";
+import { Subject, OrderCreatedUpdatedEvent, OrderStatusEnum } from "@jiaul.islam/common.ticketing.dev";
 import { TicketService } from "./ticket.service";
 import { TicketUpdatedEventProducer } from "../events/ticket.event";
 
@@ -12,8 +12,8 @@ const ticketService = new TicketService();
  * orderId will be updaeted to keep track which tickets are in use
  * @param data - The ticket data containing id, orderId.
  */
-const handleOrderCreated = async (data: OrderCreatedUpdatedEvent) => {
-    const { id, ticketId } = data;
+const handleOrderCreated = async (createdOrder: OrderCreatedUpdatedEvent) => {
+    const { id: orderId, ticketId } = createdOrder;
     const existingTicket = await ticketService.findUnique({
         where: { id: ticketId }
     });
@@ -24,7 +24,7 @@ const handleOrderCreated = async (data: OrderCreatedUpdatedEvent) => {
     const updatedTicket = await ticketService.update({
         where: { id: existingTicket.id },
         data: {
-            orderId: id,
+            orderId: orderId,
             version: existingTicket.version + 1
         }
     });
@@ -33,6 +33,27 @@ const handleOrderCreated = async (data: OrderCreatedUpdatedEvent) => {
     await ticketUpdateEventProducer.publish(updatedTicket)
 }
 
+const handleOrderUpdated = async (updatedOrder: OrderCreatedUpdatedEvent) => {
+    const { status: orderStatus, ticketId } = updatedOrder;
+    const existingTicket = await ticketService.findUnique({
+        where: { id: ticketId }
+    });
+    if (!existingTicket) {
+        console.error(`Ticket with ID ${ticketId} not found`);
+        return;
+    }
+    if (orderStatus === OrderStatusEnum.CANCELLED) {
+        const updatedTicket = await ticketService.update({
+            where: { id: existingTicket.id },
+            data: {
+                orderId: null,
+                version: existingTicket.version + 1
+            }
+        });
+        const ticketUpdateEventProducer = new TicketUpdatedEventProducer()
+        await ticketUpdateEventProducer.publish(updatedTicket)
+    }
+}
 
 type HandlerFn = (data: any) => Promise<void>;
 // Map each Subject to its handler function
@@ -42,5 +63,6 @@ type TopicHandlers = {
 const topicHandlers: TopicHandlers = {} as TopicHandlers;
 
 topicHandlers[Subject.ORDER_CREATED] = handleOrderCreated
+topicHandlers[Subject.ORDER_UPDATED] = handleOrderUpdated;
 
 export { topicHandlers }

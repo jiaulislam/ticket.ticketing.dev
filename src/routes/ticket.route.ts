@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
-import { validateRequestMiddleware, requireAuthMiddleware } from "@jiaul.islam/common.ticketing.dev";
+import { validateRequestMiddleware, requireAuthMiddleware, NotFoundError, ValidationError } from "@jiaul.islam/common.ticketing.dev";
 import { body } from "express-validator";
 
 import { TicketCreatedEventProducer, TicketUpdatedEventProducer } from "../events/ticket.event";
@@ -60,6 +60,18 @@ router.put("/:id", requireAuthMiddleware, [
 ], validateRequestMiddleware, async (req: Request, res: Response) => {
     const { id } = req.params;
     const { title, price } = req.body;
+
+    const previousTicket = await ticketService.findUnique({
+        where: { id: Number(id) },
+    });
+
+    if (!previousTicket) {
+        throw new NotFoundError();
+    }
+
+    if (previousTicket.orderId) {
+        throw new ValidationError("Cannot update ticket with active order");
+    }
 
     const ticket = await ticketService.update({
         where: { id: Number(id) },
