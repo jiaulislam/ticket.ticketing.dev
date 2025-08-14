@@ -14,18 +14,18 @@ const ticketService = new TicketService();
  */
 const handleOrderCreated = async (createdOrder: OrderCreatedUpdatedEvent) => {
     const { id: orderId, ticketId } = createdOrder;
-    const existingTicket = await ticketService.findUnique({
+    const ticket = await ticketService.findUnique({
         where: { id: ticketId }
     });
-    if (!existingTicket) {
+    if (!ticket) {
         console.error(`Ticket with ID ${ticketId} not found`);
         return;
     }
     const updatedTicket = await ticketService.update({
-        where: { id: existingTicket.id },
+        where: { id: ticket.id },
         data: {
             orderId: orderId,
-            version: existingTicket.version + 1
+            version: ticket.version + 1
         }
     });
 
