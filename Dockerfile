@@ -13,12 +13,12 @@ ENV KAFKAJS_NO_PARTITIONER_WARNING=1
 
 # Use non-root user for security
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+# Fix permissions for node_modules
+RUN chown -R appuser:appgroup /app/node_modules
+
 USER appuser
 
 EXPOSE 4001
 
-# Healthcheck (optional, adjust endpoint as needed)
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:4001/api/tickets/health || exit 1
-
-CMD ["npm", "start"]
+CMD ["sh", "-c", "npx prisma generate && npx prisma migrate deploy && npm start"]
