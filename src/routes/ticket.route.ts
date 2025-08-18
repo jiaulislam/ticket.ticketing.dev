@@ -19,11 +19,8 @@ router.get('/health', (_, res: Response) => {
   res.json({ status: 'OK' });
 });
 
-router.get('/', requireAuthMiddleware, async (req: Request, res: Response) => {
-  const currentUser = req.currentUser!;
-  const tickets = await ticketService.findAll({
-    where: { userId: currentUser.id },
-  });
+router.get('/', async (req: Request, res: Response) => {
+  const tickets = await ticketService.findAll();
   res.json(tickets);
 });
 
